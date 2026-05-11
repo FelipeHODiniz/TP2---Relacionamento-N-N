@@ -1,14 +1,16 @@
+import controller.CursoController;
+import controller.InscricaoController;
+import controller.UsuarioController;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Scanner;
-import controller.CursoController;
-import controller.UsuarioController;
 import model.Curso;
 import model.Usuario;
 import view.CursoDetalheView;
 import view.CursosView;
 import view.DadosView;
 import view.InicioView;
+import view.InscricoesView;
 import view.LoginView;
 
 public class Principal {
@@ -19,13 +21,16 @@ public class Principal {
     private static final DadosView DADOS_VIEW = new DadosView(CONSOLE);
     private static final CursosView CURSOS_VIEW = new CursosView(CONSOLE);
     private static final CursoDetalheView CURSO_DETALHE_VIEW = new CursoDetalheView(CONSOLE);
+    private static final InscricoesView INSCRICOES_VIEW = new InscricoesView(CONSOLE);
     private static UsuarioController USUARIO_CONTROLLER;
     private static CursoController CURSO_CONTROLLER;
+    private static InscricaoController INSCRICAO_CONTROLLER;
 
     public static void main(String[] args){
         try {
             USUARIO_CONTROLLER = new UsuarioController();
             CURSO_CONTROLLER = new CursoController();
+            INSCRICAO_CONTROLLER = new InscricaoController();
             menuInicial();
         } catch (Exception e) {
             System.out.println("Erro ao iniciar o sistema.");
@@ -47,6 +52,17 @@ public class Principal {
                     e.printStackTrace();
                 }
             }
+            encerrarRecursos();
+        }
+    }
+
+    private static void encerrarRecursos() {
+        try {
+            if (USUARIO_CONTROLLER != null) USUARIO_CONTROLLER.close();
+            if (CURSO_CONTROLLER != null) CURSO_CONTROLLER.close();
+            if (INSCRICAO_CONTROLLER != null) INSCRICAO_CONTROLLER.close(); // Adicionado
+        } catch (Exception e) {
+            System.out.println("Erro ao encerrar recursos do sistema.");
         }
     }
 
@@ -116,7 +132,9 @@ public class Principal {
                     }
                     break;
                 case "C":
-                    INICIO_VIEW.mostrarMensagem("Tela de Minhas inscricoes em desenvolvimento.");
+                    if (!menuMinhasInscricoes(email)) {
+                        return false;
+                    }
                     break;
                 case "S":
                     INICIO_VIEW.mostrarMensagem("Encerrando...");
@@ -280,6 +298,55 @@ public class Principal {
         }
 
         return email;
+    }
+
+    private static boolean menuMinhasInscricoes(String email) throws Exception {
+        Usuario usuario = USUARIO_CONTROLLER.buscarPorEmail(email);
+        if (usuario == null) {
+            INICIO_VIEW.mostrarMensagem("Usuario nao encontrado.");
+            return true;
+        }
+
+        boolean emInscricoes = true;
+        while (emInscricoes) {
+            // Utiliza o InscricaoController para buscar os cursos onde o usuário está inscrito
+            List<Curso> meusCursos = INSCRICAO_CONTROLLER.listarCursosDoUsuario(usuario.getId());
+            
+            String opcao = INSCRICOES_VIEW.lerOpcaoMenuInscricoes(meusCursos);
+
+            switch (opcao) {
+                case "A":
+                    INSCRICOES_VIEW.mostrarMensagem("Busca de curso por código em desenvolvimento.");
+                    // Lógica futura: ler código da view, buscar no CursoController, mostrar opções de inscrição
+                    break;
+                case "B":
+                    INSCRICOES_VIEW.mostrarMensagem("Busca de curso por palavras-chave em desenvolvimento.");
+                    // Lógica futura: ler palavras-chave, buscar no CursoController
+                    break;
+                case "C":
+                    INSCRICOES_VIEW.mostrarMensagem("Listagem de todos os cursos em desenvolvimento.");
+                    // Lógica futura: listar todos usando CursoController
+                    break;
+                case "R":
+                    emInscricoes = false; // Retorna ao menu anterior
+                    break;
+                default:
+                    // Verifica se o usuário digitou o número correspondente a um curso listado
+                    if (opcao.matches("\\d+")) {
+                        int idx = Integer.parseInt(opcao) - 1;
+                        if (meusCursos != null && idx >= 0 && idx < meusCursos.size()) {
+                            INSCRICOES_VIEW.mostrarMensagem("Acessando detalhes da inscrição no curso: " + meusCursos.get(idx).getNome() + " (Em desenvolvimento)");
+                            // Lógica futura: Menu de detalhe da inscrição (ex: opção de cancelar a inscrição)
+                        } else {
+                            INSCRICOES_VIEW.mostrarMensagem("Opcao invalida.");
+                        }
+                    } else {
+                        INSCRICOES_VIEW.mostrarMensagem("Opcao invalida.");
+                    }
+                    break;
+            }
+        }
+        return true;
     }
 
     private static void cadastrarNovoUsuario() throws Exception {
