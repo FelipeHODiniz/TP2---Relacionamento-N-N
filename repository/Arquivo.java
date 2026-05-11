@@ -4,6 +4,8 @@ package repository;
 import java.io.File;
 import java.io.RandomAccessFile;
 import java.lang.reflect.Constructor;
+import java.util.ArrayList;
+import java.util.List;
 
 public class Arquivo<T extends Registro> {
     final int TAM_CABECALHO = 12;
@@ -86,6 +88,32 @@ public class Arquivo<T extends Registro> {
             }
         }
         return null;
+    }
+
+    // Retorna todos os registros ativos do arquivo
+    public List<T> readAll() throws Exception {
+        List<T> lista = new ArrayList<>();
+        
+        // Posiciona o ponteiro logo após o cabeçalho (12 bytes)
+        arquivo.seek(TAM_CABECALHO);
+        
+        // Percorre o arquivo até o final
+        while (arquivo.getFilePointer() < arquivo.length()) {
+            byte lapide = arquivo.readByte();       // Lê a lápide
+            short tamanhoRegistro = arquivo.readShort(); // Lê o tamanho do registro
+            
+            byte[] b = new byte[tamanhoRegistro];
+            arquivo.read(b);                        // Lê os dados do registro
+            
+            // Se o registro não estiver marcado como excluído
+            if (lapide == ' ') {
+                T obj = construtor.newInstance();   // Instancia um objeto vazio
+                obj.fromByteArray(b);               // Preenche com os bytes lidos
+                lista.add(obj);                     // Adiciona na lista
+            }
+        }
+        
+        return lista;
     }
 
     public boolean delete(int id) throws Exception {

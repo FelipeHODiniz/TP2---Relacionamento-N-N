@@ -3,7 +3,6 @@ package controller;
 import java.nio.charset.StandardCharsets;
 import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
-
 import model.Usuario;
 import repository.Usuario.ArquivoUsuario;
 
