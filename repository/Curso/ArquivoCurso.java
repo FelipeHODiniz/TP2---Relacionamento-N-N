@@ -5,11 +5,15 @@ import java.util.List;
 import model.Curso;
 import repository.Arquivo;
 import repository.ArvoreBMais;
+import repository.HashExtensivel;
 
 public class ArquivoCurso extends Arquivo<Curso> {
 
     // Índice do relacionamento 1:N (idUsuario, idCurso)
     private ArvoreBMais<ParIntInt> indiceUsuarioCurso;
+
+    // Índice secundário: codigoCompartilhavel → id do curso
+    private HashExtensivel<ParCodigoID> indiceCodigo;
 
     public ArquivoCurso() throws Exception {
         super("cursos", Curso.class.getConstructor());
@@ -19,12 +23,20 @@ public class ArquivoCurso extends Arquivo<Curso> {
             5,
             ".\\dados\\cursos\\indiceUsuarioCurso.db"
         );
+
+        indiceCodigo = new HashExtensivel<>(
+            ParCodigoID.class.getConstructor(),
+            4,
+            ".\\dados\\cursos\\indiceCodigo.d.db",
+            ".\\dados\\cursos\\indiceCodigo.c.db"
+        );
     }
 
     @Override
     public int create(Curso c) throws Exception {
         int id = super.create(c);
         indiceUsuarioCurso.create(new ParIntInt(c.usuarioId, id));
+        indiceCodigo.create(new ParCodigoID(c.getCodigoCompartilhavel(), id));
         return id;
     }
 
@@ -41,9 +53,16 @@ public class ArquivoCurso extends Arquivo<Curso> {
 
         if (super.delete(id)) {
             indiceUsuarioCurso.delete(new ParIntInt(c.usuarioId, c.getId()));
+            indiceCodigo.delete(ParCodigoID.hash(c.getCodigoCompartilhavel()));
             return true;
         }
         return false;
+    }
+
+    public Curso buscarPorCodigo(String codigo) throws Exception {
+        ParCodigoID par = indiceCodigo.read(ParCodigoID.hash(codigo));
+        if (par == null) return null;
+        return read(par.getId());
     }
 
     // Lista cursos do usuário em ordem alfabética

@@ -23,9 +23,14 @@ public class InscricoesView {
         } else {
             for (int i = 0; i < inscricoes.size(); i++) {
                 Curso c = inscricoes.get(i);
-                // No InscricaoController, o estado '1' é considerado aberto.
-                // Se for diferente de 1, consideramos as inscrições encerradas.
-                String status = (c.getEstado() != 1) ? " (INSCRIÇÕES ENCERRADAS)" : "";
+                // estado 0 = aberto, 1 = inscrições encerradas, 2 = concluído, 3 = cancelado
+                String status;
+                switch (c.getEstado()) {
+                    case 1:  status = " (INSCRIÇÕES ENCERRADAS)"; break;
+                    case 2:  status = " (CONCLUÍDO)";            break;
+                    case 3:  status = " (CANCELADO)";            break;
+                    default: status = "";                        break;
+                }
                 System.out.printf("(%d) %s - %s%s\n", (i + 1), c.getNome(), c.getDataInicioCurso(), status);
             }
         }
@@ -41,5 +46,28 @@ public class InscricoesView {
 
     public void mostrarMensagem(String mensagem) {
         System.out.println(mensagem);
+    }
+
+    public String lerCodigo() {
+        System.out.print("\nDigite o código do curso: ");
+        return console.nextLine().trim();
+    }
+
+    public String mostrarDetalheCursoParaInscricao(Curso curso) {
+        System.out.println("\nEntrePares 1.0");
+        System.out.println("--------------");
+        System.out.println("> Início > Minhas inscrições > " + curso.getNome());
+
+        System.out.println("\nCÓDIGO........: " + curso.getCodigoCompartilhavel());
+        System.out.println("CURSO.........: " + curso.getNome());
+        System.out.println("DESCRIÇÃO.....: " + curso.getDescricao());
+        System.out.println("DATA DE INÍCIO: " + curso.getDataInicioCurso());
+
+        System.out.println();
+        System.out.println("(A) Fazer minha inscrição no curso");
+        System.out.println("\n(R) Retornar ao menu anterior");
+        System.out.print("\nOpção: ");
+
+        return console.nextLine().trim().toUpperCase();
     }
 }
