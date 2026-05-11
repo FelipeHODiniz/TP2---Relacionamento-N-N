@@ -36,6 +36,16 @@ public class CursoController {
         }
     }
 
+    // READ (por codigoCompartilhavel)
+    public Curso buscarPorCodigo(String codigo) {
+        try {
+            return repository.buscarPorCodigo(codigo);
+        } catch (Exception e) {
+            System.out.println("Erro ao buscar curso por código");
+            return null;
+        }
+    }
+
     // ✅ LISTAR POR USUÁRIO (COM ÁRVORE B+)
     public List<Curso> listarPorUsuario(int usuarioId) {
         try {

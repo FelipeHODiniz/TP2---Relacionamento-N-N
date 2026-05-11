@@ -233,6 +233,40 @@ public class Principal {
         }
     }
 
+    private static void menuBuscarCursoPorCodigo(Usuario usuario) throws Exception {
+        String codigo = INSCRICOES_VIEW.lerCodigo();
+        if (codigo.isEmpty()) {
+            INSCRICOES_VIEW.mostrarMensagem("Código não informado.");
+            return;
+        }
+
+        Curso curso = CURSO_CONTROLLER.buscarPorCodigo(codigo);
+        if (curso == null) {
+            INSCRICOES_VIEW.mostrarMensagem("Curso não encontrado.");
+            return;
+        }
+
+        boolean emDetalhe = true;
+        while (emDetalhe) {
+            String opcao = INSCRICOES_VIEW.mostrarDetalheCursoParaInscricao(curso);
+            switch (opcao) {
+                case "A":
+                    boolean inscrito = INSCRICAO_CONTROLLER.inscrever(usuario.getId(), curso.getId());
+                    INSCRICOES_VIEW.mostrarMensagem(inscrito
+                        ? "Inscrição realizada com sucesso!"
+                        : "Não foi possível realizar a inscrição.");
+                    if (inscrito) emDetalhe = false;
+                    break;
+                case "R":
+                    emDetalhe = false;
+                    break;
+                default:
+                    INSCRICOES_VIEW.mostrarMensagem("Opção inválida.");
+                    break;
+            }
+        }
+    }
+
     private static String menuMeusDados(String email) throws Exception {
         Usuario usuario = USUARIO_CONTROLLER.buscarPorEmail(email);
         if (usuario == null) {
@@ -316,8 +350,7 @@ public class Principal {
 
             switch (opcao) {
                 case "A":
-                    INSCRICOES_VIEW.mostrarMensagem("Busca de curso por código em desenvolvimento.");
-                    // Lógica futura: ler código da view, buscar no CursoController, mostrar opções de inscrição
+                    menuBuscarCursoPorCodigo(usuario);
                     break;
                 case "B":
                     INSCRICOES_VIEW.mostrarMensagem("Busca de curso por palavras-chave em desenvolvimento.");
